@@ -2,7 +2,8 @@ package com.vicastro.walletservice.infra.repository;
 
 import com.vicastro.walletservice.application.repository.WalletRepository;
 import com.vicastro.walletservice.domain.Wallet;
-import com.vicastro.walletservice.infra.repository.entity.WalletEntity;
+import com.vicastro.walletservice.infra.repository.jpa.WalletJpaRepository;
+import com.vicastro.walletservice.infra.repository.jpa.entity.WalletEntity;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -12,6 +13,11 @@ public class WalletRepositoryImpl implements WalletRepository {
 
     public WalletRepositoryImpl(WalletJpaRepository jpaRepository) {
         this.jpaRepository = jpaRepository;
+    }
+
+    @Override
+    public boolean existsById(String walletId) {
+        return jpaRepository.existsByCode(walletId);
     }
 
     @Override

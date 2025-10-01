@@ -28,4 +28,8 @@
                 defaultValueSequenceNext="wallet_seq"/>
     </changeSet>
 
+    <changeSet id="add-unique-constraint-wallet-code" author="vicastro">
+        <addUniqueConstraint tableName="wallet" columnNames="code" constraintName="uk_wallet_code"/>
+    </changeSet>
+
 </databaseChangeLog>
