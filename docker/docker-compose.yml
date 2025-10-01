@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres_dev:
+    image: postgres:16.2-alpine
+    container_name: postgres-dev
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: wallet-db
+      POSTGRES_USER: usr
+      POSTGRES_PASSWORD: pw
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
