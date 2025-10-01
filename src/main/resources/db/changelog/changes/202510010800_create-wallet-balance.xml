@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <changeSet id="create-wallet-balance-sequence" author="vicastro">
+        <createSequence sequenceName="wallet_balance_seq" startValue="1" incrementBy="1"/>
+    </changeSet>
+
+    <changeSet id="create-wallet-balance-table" author="vicastro">
+        <createTable tableName="wallet_balance">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="wallet_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="balance" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="reference_date" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addDefaultValue
+                tableName="wallet_balance"
+                columnName="id"
+                defaultValueSequenceNext="wallet_balance_seq"/>
+    </changeSet>
+
+    <changeSet id="add-fk-wallet-balance-wallet" author="vicastro">
+        <addForeignKeyConstraint baseTableName="wallet_balance" baseColumnNames="wallet_id"
+                                 constraintName="fk_wallet_wallet_balance"
+                                 referencedTableName="wallet"
+                                 referencedColumnNames="code"/>
+    </changeSet>
+
+</databaseChangeLog>
