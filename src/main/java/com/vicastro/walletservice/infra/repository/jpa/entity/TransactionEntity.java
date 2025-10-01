@@ -7,7 +7,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "transaction")
@@ -28,6 +31,9 @@ public class TransactionEntity {
 
     private String origin;
 
+    @Column(name = "created_at", columnDefinition = "TIMESTAMPTZ")
+    private OffsetDateTime createdAt;
+
     public TransactionEntity(String walletId, Long amount, String operation, String origin) {
         this.walletId = walletId;
         this.code = java.util.UUID.randomUUID().toString();
@@ -41,4 +47,10 @@ public class TransactionEntity {
     public Long getAmount() { return amount; }
     public String getOperation() { return operation; }
     public String getOrigin() { return origin; }
+    public OffsetDateTime getCreatedAt() { return createdAt; }
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = OffsetDateTime.now();
+    }
 }
