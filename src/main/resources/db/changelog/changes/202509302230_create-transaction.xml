@@ -29,6 +29,9 @@
             <column name="origin" type="VARCHAR(12)">
                 <constraints nullable="false"/>
             </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
 
         <addDefaultValue
