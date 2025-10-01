@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <changeSet id="create-transaction-sequence" author="vicastro">
+        <createSequence sequenceName="transaction_seq" startValue="1" incrementBy="1"/>
+    </changeSet>
+
+    <changeSet id="create-transaction-table" author="vicastro">
+        <createTable tableName="transaction">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="wallet_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="operation" type="VARCHAR(12)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="origin" type="VARCHAR(12)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addDefaultValue
+                tableName="transaction"
+                columnName="id"
+                defaultValueSequenceNext="transaction_seq"/>
+    </changeSet>
+
+    <changeSet id="add-fk-transaction-wallet" author="vicastro">
+        <addForeignKeyConstraint baseTableName="transaction" baseColumnNames="wallet_id"
+                                 constraintName="fk_wallet_transaction"
+                                 referencedTableName="wallet"
+                                 referencedColumnNames="code"/>
+    </changeSet>
+
+</databaseChangeLog>

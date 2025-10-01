@@ -1,4 +1,4 @@
-package com.vicastro.walletservice.infra.repository.entity;
+package com.vicastro.walletservice.infra.repository.jpa.entity;
 
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;

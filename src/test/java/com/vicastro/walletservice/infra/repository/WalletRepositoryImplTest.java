@@ -6,7 +6,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.vicastro.walletservice.infra.repository.entity.WalletEntity;
+import com.vicastro.walletservice.infra.repository.jpa.WalletJpaRepository;
+import com.vicastro.walletservice.infra.repository.jpa.entity.WalletEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -59,5 +60,27 @@ class WalletRepositoryImplTest {
         assertEquals(code, wallet.code());
         assertEquals(userId, wallet.userId());
         verify(jpaRepository).save(any(WalletEntity.class));
+    }
+
+    @Test
+    void shouldReturnTrueWhenWalletExistsById() {
+        var walletId = "wallet-1";
+        when(jpaRepository.existsByCode(walletId)).thenReturn(true);
+
+        var exists = walletRepository.existsById(walletId);
+
+        assertTrue(exists);
+        verify(jpaRepository).existsByCode(walletId);
+    }
+
+    @Test
+    void shouldReturnFalseWhenWalletDoesNotExistById() {
+        var walletId = "wallet-2";
+        when(jpaRepository.existsByCode(walletId)).thenReturn(false);
+
+        var exists = walletRepository.existsById(walletId);
+
+        assertFalse(exists);
+        verify(jpaRepository).existsByCode(walletId);
     }
 }
