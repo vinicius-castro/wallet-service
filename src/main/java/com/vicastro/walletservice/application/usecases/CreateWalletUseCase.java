@@ -15,7 +15,7 @@ public class CreateWalletUseCase {
 
     public CreateWalletOutput execute(CreateWalletInput input) {
         if (walletRepository.existsByUserId(input.userId())) {
-            throw new InvalidWalletCreationException();
+            throw new InvalidWalletCreationException("User already has a wallet");
         }
         var newWallet = walletRepository.create(input.userId());
 
