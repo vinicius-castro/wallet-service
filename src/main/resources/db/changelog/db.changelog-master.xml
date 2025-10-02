@@ -7,4 +7,12 @@
 
     <!-- Inclui todos os changelogs dentro da pasta 'db/changelog/changes' -->
     <includeAll path="db/changelog/changes"/>
+    <changeSet id="create-schema-spring-batch" author="vicastro">
+        <sqlFile path="schema-postgresql.sql"
+                 relativeToChangelogFile="true"
+                 stripComments="true"
+                 splitStatements="true"
+                 endDelimiter=";"/>
+    </changeSet>
+
 </databaseChangeLog>

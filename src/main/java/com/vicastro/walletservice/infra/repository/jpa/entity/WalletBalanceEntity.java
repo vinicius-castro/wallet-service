@@ -1,5 +1,6 @@
 package com.vicastro.walletservice.infra.repository.jpa.entity;
 
+import com.vicastro.walletservice.domain.WalletBalance;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -30,17 +31,19 @@ public class WalletBalanceEntity {
 
     public WalletBalanceEntity() { }
 
-    public WalletBalanceEntity(String walletId, Long balance) {
+    public WalletBalanceEntity(String walletId, Long balance, OffsetDateTime referenceDate) {
         this.walletId = walletId;
         this.balance = balance;
+        this.referenceDate = referenceDate;
+    }
+
+    public WalletBalanceEntity(WalletBalance walletBalance) {
+        this.walletId = walletBalance.walletId();
+        this.balance = walletBalance.balance();
+        this.referenceDate = walletBalance.referenceDate();
     }
 
     public String getWalletId() { return walletId; }
     public Long getBalance() { return balance; }
     public OffsetDateTime getReferenceDate() { return referenceDate; }
-
-    @PrePersist
-    protected void onCreate() {
-        referenceDate = OffsetDateTime.now();
-    }
 }

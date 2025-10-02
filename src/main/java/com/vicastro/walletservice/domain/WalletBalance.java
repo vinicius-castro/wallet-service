@@ -1,8 +1,9 @@
 package com.vicastro.walletservice.domain;
 
 import java.io.Serializable;
+import java.time.OffsetDateTime;
 
-public record WalletBalance(String walletId, Long balance) implements Serializable {
+public record WalletBalance(String walletId, Long balance, OffsetDateTime referenceDate) implements Serializable {
     public static Builder builder() {
         return new Builder();
     }
@@ -10,6 +11,7 @@ public record WalletBalance(String walletId, Long balance) implements Serializab
     public static class Builder {
         private String walletId;
         private Long balance;
+        private OffsetDateTime referenceDate;
 
         public Builder walletId(String walletId) {
             this.walletId = walletId;
@@ -21,8 +23,13 @@ public record WalletBalance(String walletId, Long balance) implements Serializab
             return this;
         }
 
+        public Builder referenceDate(OffsetDateTime referenceDate) {
+            this.referenceDate = referenceDate;
+            return this;
+        }
+
         public WalletBalance build() {
-            return new WalletBalance(walletId, balance);
+            return new WalletBalance(walletId, balance, referenceDate);
         }
     }
 }

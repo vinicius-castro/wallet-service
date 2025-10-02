@@ -13,11 +13,11 @@ import java.util.Optional;
 public interface WalletBalanceJpaRepository extends JpaRepository<WalletBalanceEntity, Long> {
     Optional<WalletBalanceEntity> findTopByWalletIdOrderByReferenceDateDesc(String walletId);
 
-    @Query(value = "SELECT m.balance FROM WalletBalanceEntity m " +
-            "WHERE m.walletId = :walletId " +
-            "AND m.referenceDate <= :referenceDate " +
-            "ORDER BY m.referenceDate DESC " +
-            "LIMIT 1")
-    Optional<Long> findLastBalanceBeforeOrEqual(@Param("walletId") String walletId,
-                                                @Param("referenceDate") OffsetDateTime referenceDate);
+    Optional<WalletBalanceEntity> findTopByWalletIdAndReferenceDateLessThanEqualOrderByReferenceDateDesc(
+            @Param("walletId") String walletId,
+            @Param("referenceDate") OffsetDateTime referenceDate
+    );
+
+    Optional<Boolean> existsByWalletIdAndReferenceDate(@Param("walletId") String walletId,
+                                                       @Param("referenceDate") OffsetDateTime referenceDate);
 }

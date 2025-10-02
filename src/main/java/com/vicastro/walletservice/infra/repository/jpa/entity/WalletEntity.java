@@ -22,6 +22,8 @@ public class WalletEntity {
     @Column(name = "user_id")
     private String userId;
 
+    public WalletEntity() { }
+
     public WalletEntity(String userId) {
         this.userId = userId;
         this.code = java.util.UUID.randomUUID().toString();
