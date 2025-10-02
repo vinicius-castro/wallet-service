@@ -7,6 +7,9 @@ import com.vicastro.walletservice.application.repository.WalletRepository;
 import com.vicastro.walletservice.application.usecases.AddFundsUseCase;
 import com.vicastro.walletservice.application.usecases.CreateWalletUseCase;
 import com.vicastro.walletservice.application.usecases.GetWalletBalanceUseCase;
+import com.vicastro.walletservice.shared.utils.OffsetDateTimeUtil;
+
+import static com.vicastro.walletservice.shared.utils.OffsetDateTimeUtil.parseToOffsetDateTime;
 
 public class WalletController {
 
@@ -32,5 +35,10 @@ public class WalletController {
     public Long getCurrentBalance(String walletId) {
         var useCase = new GetWalletBalanceUseCase(walletRepository, transactionRepository);
         return useCase.execute(walletId);
+    }
+
+    public Long getBalanceByDate(String walletId, String date) {
+        var useCase = new GetWalletBalanceUseCase(walletRepository, transactionRepository);
+        return useCase.execute(walletId, parseToOffsetDateTime(date));
     }
 }

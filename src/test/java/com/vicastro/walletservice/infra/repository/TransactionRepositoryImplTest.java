@@ -16,10 +16,13 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -138,5 +141,42 @@ class TransactionRepositoryImplTest {
 
         assertEquals(0L, balance);
         verify(walletBalanceRedisRepository).save(eq(walletId), argThat(b -> b.balance() == 0L));
+    }
+
+    @Test
+    void shouldReturnCurrentBalanceWhenDateIsToday() {
+        String walletId = "wallet-1";
+        OffsetDateTime today = OffsetDateTime.now();
+        TransactionRepositoryImpl spyRepo = spy(repository);
+        doReturn(123L).when(spyRepo).getBalance(walletId);
+
+        Long result = spyRepo.getBalanceByDate(walletId, today);
+
+        assertEquals(123L, result);
+        verify(spyRepo).getBalance(walletId);
+    }
+
+    @Test
+    void shouldReturnBalanceForPastDateIfPresent() {
+        String walletId = "wallet-2";
+        OffsetDateTime pastDate = OffsetDateTime.now().minusDays(1);
+        when(walletBalanceJpaRepository.findLastBalanceBeforeOrEqual(walletId, pastDate)).thenReturn(Optional.of(456L));
+
+        Long result = repository.getBalanceByDate(walletId, pastDate);
+
+        assertEquals(456L, result);
+        verify(walletBalanceJpaRepository).findLastBalanceBeforeOrEqual(walletId, pastDate);
+    }
+
+    @Test
+    void shouldReturnNullIfNoBalanceForPastDate() {
+        String walletId = "wallet-3";
+        OffsetDateTime pastDate = OffsetDateTime.now().minusDays(2);
+        when(walletBalanceJpaRepository.findLastBalanceBeforeOrEqual(walletId, pastDate)).thenReturn(Optional.empty());
+
+        Long result = repository.getBalanceByDate(walletId, pastDate);
+
+        assertNull(result);
+        verify(walletBalanceJpaRepository).findLastBalanceBeforeOrEqual(walletId, pastDate);
     }
 }

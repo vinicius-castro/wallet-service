@@ -1,6 +1,8 @@
 package com.vicastro.walletservice.infra.exception;
 
 import com.vicastro.walletservice.shared.exception.InvalidAmountException;
+import com.vicastro.walletservice.shared.exception.BalanceNotFoundException;
+import com.vicastro.walletservice.shared.exception.InvalidDateException;
 import com.vicastro.walletservice.shared.exception.InvalidWalletCreationException;
 import com.vicastro.walletservice.shared.exception.WalletNotFoundException;
 import org.slf4j.Logger;
@@ -29,6 +31,18 @@ public class DefaultExceptionHandler {
     @ExceptionHandler(WalletNotFoundException.class)
     public ResponseEntity<String> handleWalletNotFoundException(WalletNotFoundException ex) {
         logger.error("m=handleWalletNotFoundException, message={}", ex.getMessage(), ex);
+        return ResponseEntity.notFound().build();
+    }
+
+    @ExceptionHandler(InvalidDateException.class)
+    public ResponseEntity<String> handleInvalidDateException(InvalidDateException ex) {
+        logger.error("m=handleInvalidDateException, message={}", ex.getMessage(), ex);
+        return ResponseEntity.badRequest().build();
+    }
+
+    @ExceptionHandler(BalanceNotFoundException.class)
+    public ResponseEntity<String> handleBalanceNotFoundException(BalanceNotFoundException ex) {
+        logger.error("m=handleBalanceNotFoundException, message={}", ex.getMessage(), ex);
         return ResponseEntity.notFound().build();
     }
 }
