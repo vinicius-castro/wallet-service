@@ -11,7 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
@@ -22,6 +21,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -44,33 +44,45 @@ class TransactionRepositoryImplTest {
     }
 
     @Test
-    void shouldSaveTransactionAndUpdateCacheWhenAddingFunds() {
-        String walletId = "wallet-1";
+    void shouldSaveCreditTransactionAndUpdateCacheWhenBalancePresent() {
+        String walletId = "wallet-10";
         Long amount = 100L;
-        when(walletBalanceRedisRepository.get(walletId)).thenReturn(Optional.of(new WalletBalance(walletId, 50L)));
+        WalletBalance existingBalance = new WalletBalance(walletId, 200L);
+        when(walletBalanceRedisRepository.get(walletId)).thenReturn(Optional.of(existingBalance));
 
         repository.addFunds(walletId, amount);
 
-        ArgumentCaptor<TransactionEntity> captor = ArgumentCaptor.forClass(TransactionEntity.class);
-        verify(transactionJpaRepository).save(captor.capture());
-        TransactionEntity entity = captor.getValue();
+        ArgumentCaptor<TransactionEntity> txCaptor = ArgumentCaptor.forClass(TransactionEntity.class);
+        verify(transactionJpaRepository).save(txCaptor.capture());
+        TransactionEntity entity = txCaptor.getValue();
         assertEquals(walletId, entity.getWalletId());
         assertEquals(amount, entity.getAmount());
         assertEquals(Operation.CREDIT.name(), entity.getOperation());
         assertEquals(Origin.DEPOSIT.name(), entity.getOrigin());
 
-        verify(walletBalanceRedisRepository).save(eq(walletId), argThat(b -> b.balance() == 150L));
+        verify(walletBalanceRedisRepository).save(eq(walletId), argThat(b -> b.balance() == 300L));
     }
 
     @Test
-    void shouldSetInitialBalanceIfNotPresentWhenAddingFunds() {
-        String walletId = "wallet-2";
-        Long amount = 200L;
+    void shouldSaveCreditTransactionAndCallGetBalanceWhenBalanceNotPresent() {
+        String walletId = "wallet-11";
+        Long amount = 150L;
         when(walletBalanceRedisRepository.get(walletId)).thenReturn(Optional.empty());
+        TransactionRepositoryImpl spyRepo = spy(repository);
+        doReturn(999L).when(spyRepo).getBalance(walletId);
 
-        repository.addFunds(walletId, amount);
+        spyRepo.addFunds(walletId, amount);
 
-        verify(walletBalanceRedisRepository).save(eq(walletId), argThat(b -> b.balance() == 200L));
+        ArgumentCaptor<TransactionEntity> txCaptor = ArgumentCaptor.forClass(TransactionEntity.class);
+        verify(transactionJpaRepository).save(txCaptor.capture());
+        TransactionEntity entity = txCaptor.getValue();
+        assertEquals(walletId, entity.getWalletId());
+        assertEquals(amount, entity.getAmount());
+        assertEquals(Operation.CREDIT.name(), entity.getOperation());
+        assertEquals(Origin.DEPOSIT.name(), entity.getOrigin());
+
+        verify(spyRepo).getBalance(walletId);
+        verify(walletBalanceRedisRepository, never()).save(eq(walletId), any());
     }
 
     @Test

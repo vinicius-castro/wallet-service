@@ -2,7 +2,7 @@ package com.vicastro.walletservice.infra.api.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vicastro.walletservice.domain.Wallet;
-import com.vicastro.walletservice.infra.api.rest.request.AddFundsRequest;
+import com.vicastro.walletservice.infra.api.rest.request.FundsRequest;
 import com.vicastro.walletservice.infra.api.rest.request.CreateWalletRequest;
 import com.vicastro.walletservice.infra.repository.TransactionRepositoryImpl;
 import com.vicastro.walletservice.infra.repository.WalletRepositoryImpl;
@@ -53,12 +53,12 @@ class WalletRestControllerTest {
     void shouldAddFundsAndReturn204() throws Exception {
         var walletId = "wallet-1";
         var amount = 100L;
-        var request = new AddFundsRequest(walletId, amount);
+        var request = new FundsRequest(walletId, amount);
 
         when(walletRepository.existsById(walletId)).thenReturn(true);
         doNothing().when(transactionRepository).addFunds(walletId, amount);
 
-        mockMvc.perform(post("/wallet/funds")
+        mockMvc.perform(post("/wallet/deposit")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());

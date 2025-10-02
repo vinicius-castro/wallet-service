@@ -2,7 +2,7 @@ package com.vicastro.walletservice.infra.api.rest;
 
 import com.vicastro.walletservice.adapter.WalletController;
 import com.vicastro.walletservice.application.dto.CreateWalletInput;
-import com.vicastro.walletservice.infra.api.rest.request.AddFundsRequest;
+import com.vicastro.walletservice.infra.api.rest.request.FundsRequest;
 import com.vicastro.walletservice.infra.api.rest.request.CreateWalletRequest;
 import com.vicastro.walletservice.infra.api.rest.response.CreateWalletResponse;
 import com.vicastro.walletservice.infra.api.rest.response.WalletBalanceResponse;
@@ -30,8 +30,8 @@ public class WalletRestController {
         this.transactionRepository = transactionRepository;
     }
 
-    @PostMapping("/funds")
-    public ResponseEntity<Void> addFunds(@RequestBody AddFundsRequest request) {
+    @PostMapping("/deposit")
+    public ResponseEntity<Void> addFunds(@RequestBody FundsRequest request) {
         getWalletController().addFunds(request.walletId(), request.amount());
         return ResponseEntity.noContent().build();
     }
@@ -57,6 +57,12 @@ public class WalletRestController {
                                                                   @PathVariable("date") String date) {
         var balance = getWalletController().getBalanceByDate(walletId, date);
         return ResponseEntity.ok(new WalletBalanceResponse(walletId, BigDecimal.valueOf(balance)));
+    }
+
+    @PostMapping("/withdraw")
+    public ResponseEntity<Void> withdrawFunds(@RequestBody FundsRequest request) {
+        getWalletController().withdrawFunds(request.walletId(), request.amount());
+        return ResponseEntity.noContent().build();
     }
 
     private WalletController getWalletController() {

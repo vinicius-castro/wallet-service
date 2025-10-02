@@ -5,13 +5,12 @@ import com.vicastro.walletservice.application.repository.WalletRepository;
 import com.vicastro.walletservice.shared.exception.InvalidAmountException;
 import com.vicastro.walletservice.shared.exception.WalletNotFoundException;
 
-public class AddFundsUseCase {
+public class WithdrawFundsUseCase {
 
     private final WalletRepository walletRepository;
     private final TransactionRepository transactionRepository;
 
-    public AddFundsUseCase(WalletRepository walletRepository,
-                           TransactionRepository transactionRepository) {
+    public WithdrawFundsUseCase(WalletRepository walletRepository, TransactionRepository transactionRepository) {
         this.walletRepository = walletRepository;
         this.transactionRepository = transactionRepository;
     }
@@ -25,7 +24,10 @@ public class AddFundsUseCase {
             throw new WalletNotFoundException();
         }
 
-        transactionRepository.addFunds(walletId, amountInCents);
-    }
+        if (transactionRepository.getBalance(walletId) < amountInCents) {
+            throw new InvalidAmountException("Insufficient funds");
+        }
 
+        transactionRepository.withdrawFunds(walletId, amountInCents);
+    }
 }

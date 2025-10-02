@@ -30,14 +30,15 @@ public class TransactionRepositoryImpl implements TransactionRepository {
 
     @Override
     @Transactional
-    public void addFunds(String walletId, Long amount) {
-        transactionJpaRepository.save(new TransactionEntity(walletId, amount, Operation.CREDIT.name(), Origin.DEPOSIT.name()));
+    public void addFunds(String walletId, Long amountInCents) {
+        transactionJpaRepository.save(new TransactionEntity(walletId, amountInCents, Operation.CREDIT.name(), Origin.DEPOSIT.name()));
 
         var walletBalance = walletBalanceRedisRepository.get(walletId);
-        saveWalletBalanceInCache(walletId,
-                walletBalance.map(balance -> balance.balance() + amount)
-                        .orElse(amount)
-        );
+        if (walletBalance.isEmpty()) {
+            getBalance(walletId);
+            return;
+        }
+        saveWalletBalanceInCache(walletId, walletBalance.get().balance() + amountInCents);
     }
 
     @Override
@@ -57,6 +58,18 @@ public class TransactionRepositoryImpl implements TransactionRepository {
             return getBalance(walletId);
         }
         return walletBalanceJpaRepository.findLastBalanceBeforeOrEqual(walletId, date).orElse(null);
+    }
+
+    @Override
+    @Transactional
+    public void withdrawFunds(String walletId, Long amountInCents) {
+        transactionJpaRepository.save(new TransactionEntity(walletId, amountInCents, Operation.DEBIT.name(), Origin.WITHDRAW.name()));
+
+        var walletBalance = walletBalanceRedisRepository.get(walletId);
+        saveWalletBalanceInCache(walletId,
+                walletBalance.map(balance -> balance.balance() - amountInCents)
+                        .orElse(amountInCents)
+        );
     }
 
     private Long calculateBalanceUsingWalletBalanceAndRecentTransactions(String walletId) {
