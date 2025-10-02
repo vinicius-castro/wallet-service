@@ -21,26 +21,40 @@ public class WithdrawFundsUseCase {
     }
 
     public void execute(String walletId, Long amountInCents) {
-        if (amountInCents <= 0) {
-            throw new InvalidAmountException();
-        }
-
-        if (!walletRepository.existsById(walletId)) {
-            throw new WalletNotFoundException();
-        }
-
-        if (transactionRepository.getBalance(walletId) < amountInCents) {
-            throw new InvalidAmountException("Insufficient funds");
-        }
+        validateWithdraw(walletId, amountInCents);
 
         transactionRepository.addTransaction(
                 Transaction.builder()
                         .id(UUID.randomUUID().toString())
                         .walletId(walletId)
-                        .valueInCents(amountInCents)
+                        .amount(amountInCents)
                         .operation(Operation.DEBIT)
                         .origin(Origin.WITHDRAW)
                         .build()
         );
+    }
+
+    private void validateWithdraw(String walletId, Long amountInCents) {
+        validateAmount(amountInCents);
+        validateWallet(walletId);
+        validateBalance(walletId, amountInCents);
+    }
+
+    private void validateBalance(String walletId, Long amountInCents) {
+        if (transactionRepository.getBalance(walletId) < amountInCents) {
+            throw new InvalidAmountException("Insufficient funds");
+        }
+    }
+
+    private void validateWallet(String walletId) {
+        if (!walletRepository.existsById(walletId)) {
+            throw new WalletNotFoundException();
+        }
+    }
+
+    private static void validateAmount(Long amountInCents) {
+        if (amountInCents <= 0) {
+            throw new InvalidAmountException();
+        }
     }
 }

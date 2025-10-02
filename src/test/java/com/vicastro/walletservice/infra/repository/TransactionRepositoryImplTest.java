@@ -51,7 +51,7 @@ class TransactionRepositoryImplTest {
 
         var transaction = Transaction.builder()
                 .walletId(walletId)
-                .valueInCents(amount)
+                .amount(amount)
                 .operation(Operation.CREDIT)
                 .origin(Origin.DEPOSIT)
                 .build();
@@ -79,7 +79,7 @@ class TransactionRepositoryImplTest {
 
         var transaction = Transaction.builder()
                 .walletId(walletId)
-                .valueInCents(amount)
+                .amount(amount)
                 .operation(Operation.CREDIT)
                 .origin(Origin.DEPOSIT)
                 .build();

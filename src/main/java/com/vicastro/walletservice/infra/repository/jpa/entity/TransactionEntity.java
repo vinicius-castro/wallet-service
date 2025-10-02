@@ -42,7 +42,7 @@ public class TransactionEntity {
         this.walletId = transaction.walletId();
         this.walletIdRelated = transaction.walletIdRelated();
         this.code = transaction.id();
-        this.amount = transaction.valueInCents();
+        this.amount = transaction.amount();
         this.operation = transaction.operation().name();
         this.origin = transaction.origin().name();
     }

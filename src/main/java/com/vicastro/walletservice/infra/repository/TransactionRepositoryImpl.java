@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.OffsetDateTime;
 
 @Component
+@Transactional
 public class TransactionRepositoryImpl implements TransactionRepository {
 
     private final TransactionJpaRepository transactionJpaRepository;
@@ -29,26 +30,19 @@ public class TransactionRepositoryImpl implements TransactionRepository {
     }
 
     @Override
-    @Transactional
     public void addTransaction(Transaction transaction) {
         transactionJpaRepository.save(new TransactionEntity(transaction));
-
-        var walletBalance = walletBalanceRedisRepository.get(transaction.walletId());
-        if (walletBalance.isEmpty()) {
-            getBalance(transaction.walletId());
-            return;
-        }
-
-        var newBalance = 0L;
-        if (transaction.operation() == Operation.CREDIT)
-            newBalance = walletBalance.get().balance() + transaction.valueInCents();
-        else
-            newBalance = walletBalance.get().balance() - transaction.valueInCents();
-
-        saveWalletBalanceInCache(transaction.walletId(), newBalance);
+        updateBalance(transaction);
     }
 
     @Override
+    public void addTransferTransaction(Transaction from, Transaction to) {
+        addTransaction(from);
+        addTransaction(to);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Long getBalance(String walletId) {
         var walletBalance = walletBalanceRedisRepository.get(walletId);
         if (walletBalance.isPresent()) return walletBalance.get().balance();
@@ -60,6 +54,7 @@ public class TransactionRepositoryImpl implements TransactionRepository {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Long getBalanceByDate(String walletId, OffsetDateTime date) {
         if (date.toLocalDate().isEqual(OffsetDateTime.now().toLocalDate())) {
             return getBalance(walletId);
@@ -89,6 +84,22 @@ public class TransactionRepositoryImpl implements TransactionRepository {
                 .orElse(0L);
         saveWalletBalanceInCache(walletId, allTransactionsBalance);
         return allTransactionsBalance;
+    }
+
+    private void updateBalance(Transaction transaction) {
+        var walletBalance = walletBalanceRedisRepository.get(transaction.walletId());
+        if (walletBalance.isEmpty()) {
+            getBalance(transaction.walletId());
+            return;
+        }
+
+        var newBalance = 0L;
+        if (transaction.operation() == Operation.CREDIT)
+            newBalance = walletBalance.get().balance() + transaction.amount();
+        else
+            newBalance = walletBalance.get().balance() - transaction.amount();
+
+        saveWalletBalanceInCache(transaction.walletId(), newBalance);
     }
 
     private void saveWalletBalanceInCache(String walletId, long balance) {

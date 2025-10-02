@@ -8,7 +8,7 @@ public record Transaction(String id,
                           String walletIdRelated,
                           Operation operation,
                           Origin origin,
-                          Long valueInCents
+                          Long amount
 ) {
     public static Builder builder() {
         return new Builder();
@@ -20,7 +20,7 @@ public record Transaction(String id,
         private String walletIdRelated;
         private Operation operation;
         private Origin origin;
-        private Long valueInCents;
+        private Long amount;
 
         public Builder id(String id) {
             this.id = id;
@@ -47,13 +47,13 @@ public record Transaction(String id,
             return this;
         }
 
-        public Builder valueInCents(Long valueInCents) {
-            this.valueInCents = valueInCents;
+        public Builder amount(Long amount) {
+            this.amount = amount;
             return this;
         }
 
         public Transaction build() {
-            return new Transaction(id, walletId, walletIdRelated, operation, origin, valueInCents);
+            return new Transaction(id, walletId, walletIdRelated, operation, origin, amount);
         }
     }
 }

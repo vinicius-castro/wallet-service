@@ -55,7 +55,7 @@ class WithdrawFundsUseCaseTest {
 
         verify(transactionRepository).addTransaction(argThat(tx ->
                 tx.walletId().equals(walletId)
-                        && tx.valueInCents().equals(amount)
+                        && tx.amount().equals(amount)
                         && tx.operation() == Operation.DEBIT
                         && tx.origin() == Origin.WITHDRAW
         ));

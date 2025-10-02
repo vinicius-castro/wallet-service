@@ -34,7 +34,7 @@ public class AddFundsUseCase {
                 Transaction.builder()
                         .id(UUID.randomUUID().toString())
                         .walletId(walletId)
-                        .valueInCents(amountInCents)
+                        .amount(amountInCents)
                         .operation(Operation.CREDIT)
                         .origin(Origin.DEPOSIT)
                         .build()

@@ -10,4 +10,6 @@ public interface TransactionRepository {
     Long getBalance(String walletId);
 
     Long getBalanceByDate(String walletId, OffsetDateTime date);
+
+    void addTransferTransaction(Transaction from, Transaction to);
 }
