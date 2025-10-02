@@ -2,8 +2,13 @@ package com.vicastro.walletservice.application.usecases;
 
 import com.vicastro.walletservice.application.repository.TransactionRepository;
 import com.vicastro.walletservice.application.repository.WalletRepository;
+import com.vicastro.walletservice.domain.Transaction;
+import com.vicastro.walletservice.domain.enums.Operation;
+import com.vicastro.walletservice.domain.enums.Origin;
 import com.vicastro.walletservice.shared.exception.InvalidAmountException;
 import com.vicastro.walletservice.shared.exception.WalletNotFoundException;
+
+import java.util.UUID;
 
 public class WithdrawFundsUseCase {
 
@@ -16,18 +21,40 @@ public class WithdrawFundsUseCase {
     }
 
     public void execute(String walletId, Long amountInCents) {
-        if (amountInCents <= 0) {
-            throw new InvalidAmountException();
-        }
+        validateWithdraw(walletId, amountInCents);
 
-        if (!walletRepository.existsById(walletId)) {
-            throw new WalletNotFoundException();
-        }
+        transactionRepository.addTransaction(
+                Transaction.builder()
+                        .id(UUID.randomUUID().toString())
+                        .walletId(walletId)
+                        .amount(amountInCents)
+                        .operation(Operation.DEBIT)
+                        .origin(Origin.WITHDRAW)
+                        .build()
+        );
+    }
 
+    private void validateWithdraw(String walletId, Long amountInCents) {
+        validateAmount(amountInCents);
+        validateWallet(walletId);
+        validateBalance(walletId, amountInCents);
+    }
+
+    private void validateBalance(String walletId, Long amountInCents) {
         if (transactionRepository.getBalance(walletId) < amountInCents) {
             throw new InvalidAmountException("Insufficient funds");
         }
+    }
 
-        transactionRepository.withdrawFunds(walletId, amountInCents);
+    private void validateWallet(String walletId) {
+        if (!walletRepository.existsById(walletId)) {
+            throw new WalletNotFoundException();
+        }
+    }
+
+    private static void validateAmount(Long amountInCents) {
+        if (amountInCents <= 0) {
+            throw new InvalidAmountException();
+        }
     }
 }

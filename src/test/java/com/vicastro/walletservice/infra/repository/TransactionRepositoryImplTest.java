@@ -1,5 +1,6 @@
 package com.vicastro.walletservice.infra.repository;
 
+import com.vicastro.walletservice.domain.Transaction;
 import com.vicastro.walletservice.domain.WalletBalance;
 import com.vicastro.walletservice.domain.enums.Operation;
 import com.vicastro.walletservice.domain.enums.Origin;
@@ -45,12 +46,20 @@ class TransactionRepositoryImplTest {
 
     @Test
     void shouldSaveCreditTransactionAndUpdateCacheWhenBalancePresent() {
-        String walletId = "wallet-10";
-        Long amount = 100L;
+        var walletId = "wallet-10";
+        var amount = 100L;
+
+        var transaction = Transaction.builder()
+                .walletId(walletId)
+                .amount(amount)
+                .operation(Operation.CREDIT)
+                .origin(Origin.DEPOSIT)
+                .build();
+
         WalletBalance existingBalance = new WalletBalance(walletId, 200L);
         when(walletBalanceRedisRepository.get(walletId)).thenReturn(Optional.of(existingBalance));
 
-        repository.addFunds(walletId, amount);
+        repository.addTransaction(transaction);
 
         ArgumentCaptor<TransactionEntity> txCaptor = ArgumentCaptor.forClass(TransactionEntity.class);
         verify(transactionJpaRepository).save(txCaptor.capture());
@@ -65,13 +74,21 @@ class TransactionRepositoryImplTest {
 
     @Test
     void shouldSaveCreditTransactionAndCallGetBalanceWhenBalanceNotPresent() {
-        String walletId = "wallet-11";
-        Long amount = 150L;
+        var walletId = "wallet-11";
+        var amount = 150L;
+
+        var transaction = Transaction.builder()
+                .walletId(walletId)
+                .amount(amount)
+                .operation(Operation.CREDIT)
+                .origin(Origin.DEPOSIT)
+                .build();
+
         when(walletBalanceRedisRepository.get(walletId)).thenReturn(Optional.empty());
         TransactionRepositoryImpl spyRepo = spy(repository);
         doReturn(999L).when(spyRepo).getBalance(walletId);
 
-        spyRepo.addFunds(walletId, amount);
+        spyRepo.addTransaction(transaction);
 
         ArgumentCaptor<TransactionEntity> txCaptor = ArgumentCaptor.forClass(TransactionEntity.class);
         verify(transactionJpaRepository).save(txCaptor.capture());

@@ -1,5 +1,6 @@
 package com.vicastro.walletservice.infra.repository.jpa.entity;
 
+import com.vicastro.walletservice.domain.Transaction;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -23,6 +24,9 @@ public class TransactionEntity {
     @Column(name = "wallet_id")
     private String walletId;
 
+    @Column(name = "wallet_id_related")
+    private String walletIdRelated;
+
     private String code;
 
     private Long amount;
@@ -34,15 +38,17 @@ public class TransactionEntity {
     @Column(name = "created_at", columnDefinition = "TIMESTAMPTZ")
     private OffsetDateTime createdAt;
 
-    public TransactionEntity(String walletId, Long amount, String operation, String origin) {
-        this.walletId = walletId;
-        this.code = java.util.UUID.randomUUID().toString();
-        this.amount = amount;
-        this.operation = operation;
-        this.origin = origin;
+    public TransactionEntity(Transaction transaction) {
+        this.walletId = transaction.walletId();
+        this.walletIdRelated = transaction.walletIdRelated();
+        this.code = transaction.id();
+        this.amount = transaction.amount();
+        this.operation = transaction.operation().name();
+        this.origin = transaction.origin().name();
     }
 
     public String getWalletId() { return walletId; }
+    public String getWalletIdRelated() { return walletIdRelated; }
     public String getCode() { return code; }
     public Long getAmount() { return amount; }
     public String getOperation() { return operation; }

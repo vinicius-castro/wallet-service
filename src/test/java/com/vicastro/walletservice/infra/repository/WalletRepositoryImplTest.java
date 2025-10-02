@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.vicastro.walletservice.infra.repository.cache.redis.WalletRedisRepository;
 import com.vicastro.walletservice.infra.repository.jpa.WalletJpaRepository;
 import com.vicastro.walletservice.infra.repository.jpa.entity.WalletEntity;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,12 +15,14 @@ import org.junit.jupiter.api.Test;
 class WalletRepositoryImplTest {
 
     private WalletJpaRepository jpaRepository;
+    private WalletRedisRepository redisRepository;
     private WalletRepositoryImpl walletRepository;
 
     @BeforeEach
     void setUp() {
         jpaRepository = mock(WalletJpaRepository.class);
-        walletRepository = new WalletRepositoryImpl(jpaRepository);
+        redisRepository = mock(WalletRedisRepository.class);
+        walletRepository = new WalletRepositoryImpl(jpaRepository, redisRepository);
     }
 
     @Test

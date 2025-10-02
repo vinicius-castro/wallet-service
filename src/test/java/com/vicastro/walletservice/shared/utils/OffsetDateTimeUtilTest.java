@@ -32,7 +32,7 @@ class OffsetDateTimeUtilTest {
     }
 
     @Test
-    void shouldParseDateStringToMidnightUtcWhenIsoOffsetDateTimeFails() {
+    void shouldParseDateStringToMaxHourWhenIsoOffsetDateTimeFails() {
         String input = "2024-06-01";
         OffsetDateTime result = OffsetDateTimeUtil.parseToOffsetDateTime(input);
         assertEquals(
@@ -40,10 +40,10 @@ class OffsetDateTimeUtilTest {
                         2024,
                         6,
                         1,
-                        0,
-                        0,
-                        0,
-                        0,
+                        23,
+                        59,
+                        59,
+                        999_999_999,
                         ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now())
                 ), result);
     }
