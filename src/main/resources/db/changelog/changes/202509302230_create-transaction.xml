@@ -47,4 +47,13 @@
                                  referencedColumnNames="code"/>
     </changeSet>
 
+    <changeSet id="create-index-transaction-wallet-id-created-at" author="vicastro">
+        <createIndex indexName="idx_transaction_wallet_id_created_at"
+                     tableName="transaction"
+                     unique="false">
+            <column name="wallet_id"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>
