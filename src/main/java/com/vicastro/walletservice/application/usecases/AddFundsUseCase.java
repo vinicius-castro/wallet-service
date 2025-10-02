@@ -2,8 +2,13 @@ package com.vicastro.walletservice.application.usecases;
 
 import com.vicastro.walletservice.application.repository.TransactionRepository;
 import com.vicastro.walletservice.application.repository.WalletRepository;
+import com.vicastro.walletservice.domain.Transaction;
+import com.vicastro.walletservice.domain.enums.Operation;
+import com.vicastro.walletservice.domain.enums.Origin;
 import com.vicastro.walletservice.shared.exception.InvalidAmountException;
 import com.vicastro.walletservice.shared.exception.WalletNotFoundException;
+
+import java.util.UUID;
 
 public class AddFundsUseCase {
 
@@ -25,7 +30,15 @@ public class AddFundsUseCase {
             throw new WalletNotFoundException();
         }
 
-        transactionRepository.addFunds(walletId, amountInCents);
+        transactionRepository.addTransaction(
+                Transaction.builder()
+                        .id(UUID.randomUUID().toString())
+                        .walletId(walletId)
+                        .valueInCents(amountInCents)
+                        .operation(Operation.CREDIT)
+                        .origin(Origin.DEPOSIT)
+                        .build()
+        );
     }
 
 }

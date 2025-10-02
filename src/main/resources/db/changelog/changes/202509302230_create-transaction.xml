@@ -20,6 +20,7 @@
             <column name="wallet_id" type="VARCHAR(36)">
                 <constraints nullable="false"/>
             </column>
+            <column name="wallet_id_related" type="VARCHAR(36)"/>
             <column name="amount" type="BIGINT">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -43,6 +44,13 @@
     <changeSet id="add-fk-transaction-wallet" author="vicastro">
         <addForeignKeyConstraint baseTableName="transaction" baseColumnNames="wallet_id"
                                  constraintName="fk_wallet_transaction"
+                                 referencedTableName="wallet"
+                                 referencedColumnNames="code"/>
+    </changeSet>
+
+    <changeSet id="add-fk-transaction-wallet-related" author="vicastro">
+        <addForeignKeyConstraint baseTableName="transaction" baseColumnNames="wallet_id_related"
+                                 constraintName="fk_wallet_related_transaction"
                                  referencedTableName="wallet"
                                  referencedColumnNames="code"/>
     </changeSet>

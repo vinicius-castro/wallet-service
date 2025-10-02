@@ -56,7 +56,7 @@ class WalletRestControllerTest {
         var request = new FundsRequest(walletId, amount);
 
         when(walletRepository.existsById(walletId)).thenReturn(true);
-        doNothing().when(transactionRepository).addFunds(walletId, amount);
+        doNothing().when(transactionRepository).addTransaction(any());
 
         mockMvc.perform(post("/wallet/deposit")
                         .contentType(MediaType.APPLICATION_JSON)
