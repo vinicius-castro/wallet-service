@@ -32,7 +32,7 @@ public class WalletRestController {
 
     @PostMapping("/funds")
     public ResponseEntity<Void> addFunds(@RequestBody AddFundsRequest request) {
-        (new WalletController(walletRepository, transactionRepository)).addFunds(request.walletId(), request.amount());
+        getWalletController().addFunds(request.walletId(), request.amount());
         return ResponseEntity.noContent().build();
     }
 
@@ -41,14 +41,25 @@ public class WalletRestController {
         var input = CreateWalletInput.builder()
                 .userId(request.userId())
                 .build();
-        var output = (new WalletController(walletRepository, transactionRepository)).createWallet(input);
+        var output = getWalletController().createWallet(input);
 
         return ResponseEntity.status(201).body(new CreateWalletResponse(output.walletId()));
     }
 
     @GetMapping("{walletId}/balance")
     public ResponseEntity<WalletBalanceResponse> getCurrentBalance(@PathVariable("walletId") String walletId) {
-        var balance = (new WalletController(walletRepository, transactionRepository)).getCurrentBalance(walletId);
+        var balance = getWalletController().getCurrentBalance(walletId);
         return ResponseEntity.ok(new WalletBalanceResponse(walletId, BigDecimal.valueOf(balance)));
+    }
+
+    @GetMapping("{walletId}/balance/{date}")
+    public ResponseEntity<WalletBalanceResponse> getBalanceByDate(@PathVariable("walletId") String walletId,
+                                                                  @PathVariable("date") String date) {
+        var balance = getWalletController().getBalanceByDate(walletId, date);
+        return ResponseEntity.ok(new WalletBalanceResponse(walletId, BigDecimal.valueOf(balance)));
+    }
+
+    private WalletController getWalletController() {
+        return new WalletController(walletRepository, transactionRepository);
     }
 }

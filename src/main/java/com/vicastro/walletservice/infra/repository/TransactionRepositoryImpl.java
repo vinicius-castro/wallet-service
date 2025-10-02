@@ -11,6 +11,8 @@ import com.vicastro.walletservice.infra.repository.jpa.entity.TransactionEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
+
 @Component
 public class TransactionRepositoryImpl implements TransactionRepository {
 
@@ -47,6 +49,14 @@ public class TransactionRepositoryImpl implements TransactionRepository {
         if (balance != null) return balance;
 
         return calculateBalanceFromAllTransactions(walletId);
+    }
+
+    @Override
+    public Long getBalanceByDate(String walletId, OffsetDateTime date) {
+        if (date.toLocalDate().isEqual(OffsetDateTime.now().toLocalDate())) {
+            return getBalance(walletId);
+        }
+        return walletBalanceJpaRepository.findLastBalanceBeforeOrEqual(walletId, date).orElse(null);
     }
 
     private Long calculateBalanceUsingWalletBalanceAndRecentTransactions(String walletId) {
