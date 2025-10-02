@@ -8,6 +8,7 @@ import com.vicastro.walletservice.infra.repository.cache.redis.WalletBalanceRedi
 import com.vicastro.walletservice.infra.repository.jpa.TransactionJpaRepository;
 import com.vicastro.walletservice.infra.repository.jpa.WalletBalanceJpaRepository;
 import com.vicastro.walletservice.infra.repository.jpa.entity.TransactionEntity;
+import com.vicastro.walletservice.infra.repository.jpa.entity.WalletBalanceEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -56,7 +57,7 @@ class TransactionRepositoryImplTest {
                 .origin(Origin.DEPOSIT)
                 .build();
 
-        WalletBalance existingBalance = new WalletBalance(walletId, 200L);
+        WalletBalance existingBalance = new WalletBalance(walletId, 200L, OffsetDateTime.now().minusDays(1));
         when(walletBalanceRedisRepository.get(walletId)).thenReturn(Optional.of(existingBalance));
 
         repository.addTransaction(transaction);
@@ -105,7 +106,7 @@ class TransactionRepositoryImplTest {
     @Test
     void shouldReturnBalanceFromCacheIfPresent() {
         String walletId = "wallet-3";
-        when(walletBalanceRedisRepository.get(walletId)).thenReturn(Optional.of(new WalletBalance(walletId, 300L)));
+        when(walletBalanceRedisRepository.get(walletId)).thenReturn(Optional.of(new WalletBalance(walletId, 300L, OffsetDateTime.now())));
 
         Long balance = repository.getBalance(walletId);
 
@@ -122,7 +123,7 @@ class TransactionRepositoryImplTest {
         when(walletBalanceEntity.getBalance()).thenReturn(400L);
         when(walletBalanceRedisRepository.get(walletId)).thenReturn(Optional.empty());
         when(walletBalanceJpaRepository.findTopByWalletIdOrderByReferenceDateDesc(walletId)).thenReturn(Optional.of(walletBalanceEntity));
-        when(transactionJpaRepository.calculateBalanceByWalletAndDate(eq(walletId), any())).thenReturn(50L);
+        when(transactionJpaRepository.calculateBalanceByWalletAndGreaterThanStartDate(eq(walletId), any())).thenReturn(50L);
 
         Long balance = repository.getBalance(walletId);
 
@@ -138,7 +139,7 @@ class TransactionRepositoryImplTest {
         when(walletBalanceEntity.getBalance()).thenReturn(500L);
         when(walletBalanceRedisRepository.get(walletId)).thenReturn(Optional.empty());
         when(walletBalanceJpaRepository.findTopByWalletIdOrderByReferenceDateDesc(walletId)).thenReturn(Optional.of(walletBalanceEntity));
-        when(transactionJpaRepository.calculateBalanceByWalletAndDate(eq(walletId), any())).thenReturn(null);
+        when(transactionJpaRepository.calculateBalanceByWalletAndGreaterThanStartDate(eq(walletId), any())).thenReturn(null);
 
         Long balance = repository.getBalance(walletId);
 
@@ -189,23 +190,53 @@ class TransactionRepositoryImplTest {
     void shouldReturnBalanceForPastDateIfPresent() {
         String walletId = "wallet-2";
         OffsetDateTime pastDate = OffsetDateTime.now().minusDays(1);
-        when(walletBalanceJpaRepository.findLastBalanceBeforeOrEqual(walletId, pastDate)).thenReturn(Optional.of(456L));
+        when(walletBalanceJpaRepository.findTopByWalletIdAndReferenceDateLessThanEqualOrderByReferenceDateDesc(walletId, pastDate))
+                .thenReturn(Optional.of(new WalletBalanceEntity(walletId, 456L, pastDate)));
 
         Long result = repository.getBalanceByDate(walletId, pastDate);
 
         assertEquals(456L, result);
-        verify(walletBalanceJpaRepository).findLastBalanceBeforeOrEqual(walletId, pastDate);
+        verify(walletBalanceJpaRepository).findTopByWalletIdAndReferenceDateLessThanEqualOrderByReferenceDateDesc(walletId, pastDate);
     }
 
     @Test
     void shouldReturnNullIfNoBalanceForPastDate() {
         String walletId = "wallet-3";
         OffsetDateTime pastDate = OffsetDateTime.now().minusDays(2);
-        when(walletBalanceJpaRepository.findLastBalanceBeforeOrEqual(walletId, pastDate)).thenReturn(Optional.empty());
+        when(walletBalanceJpaRepository.findTopByWalletIdAndReferenceDateLessThanEqualOrderByReferenceDateDesc(walletId, pastDate)).thenReturn(Optional.empty());
 
         Long result = repository.getBalanceByDate(walletId, pastDate);
 
         assertNull(result);
-        verify(walletBalanceJpaRepository).findLastBalanceBeforeOrEqual(walletId, pastDate);
+        verify(walletBalanceJpaRepository).findTopByWalletIdAndReferenceDateLessThanEqualOrderByReferenceDateDesc(walletId, pastDate);
+    }
+
+    @Test
+    void shouldReturnBalanceByWalletLessThanEndDate() {
+        String walletId = "wallet-abc";
+        OffsetDateTime endDate = OffsetDateTime.now();
+        Optional<Long> expected = Optional.of(123L);
+
+        when(transactionJpaRepository.calculateBalanceByWalletLessThanEndDate(walletId, endDate)).thenReturn(expected);
+
+        Optional<Long> result = repository.calculateBalanceByWalletLessThanEndDate(walletId, endDate);
+
+        assertEquals(expected, result);
+        verify(transactionJpaRepository).calculateBalanceByWalletLessThanEndDate(walletId, endDate);
+    }
+
+    @Test
+    void shouldReturnBalanceByWalletIdAndDateRange() {
+        String walletId = "wallet-def";
+        OffsetDateTime startDate = OffsetDateTime.now().minusDays(2);
+        OffsetDateTime endDate = OffsetDateTime.now();
+        Optional<Long> expected = Optional.of(456L);
+
+        when(transactionJpaRepository.calculateBalanceByWalletIdAndDateRange(walletId, startDate, endDate)).thenReturn(expected);
+
+        Optional<Long> result = repository.calculateBalanceByWalletIdAndDateRange(walletId, startDate, endDate);
+
+        assertEquals(expected, result);
+        verify(transactionJpaRepository).calculateBalanceByWalletIdAndDateRange(walletId, startDate, endDate);
     }
 }

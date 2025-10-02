@@ -47,6 +47,12 @@ public class TransactionEntity {
         this.origin = transaction.origin().name();
     }
 
+    public TransactionEntity(String walletId, Long amount, String operation) {
+        this.walletId = walletId;
+        this.amount = amount;
+        this.operation = operation;
+    }
+
     public String getWalletId() { return walletId; }
     public String getWalletIdRelated() { return walletIdRelated; }
     public String getCode() { return code; }

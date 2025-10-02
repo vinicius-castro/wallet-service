@@ -8,10 +8,12 @@ import com.vicastro.walletservice.infra.repository.cache.redis.WalletBalanceRedi
 import com.vicastro.walletservice.infra.repository.jpa.TransactionJpaRepository;
 import com.vicastro.walletservice.infra.repository.jpa.WalletBalanceJpaRepository;
 import com.vicastro.walletservice.infra.repository.jpa.entity.TransactionEntity;
+import com.vicastro.walletservice.infra.repository.jpa.entity.WalletBalanceEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
 @Component
 @Transactional
@@ -42,6 +44,16 @@ public class TransactionRepositoryImpl implements TransactionRepository {
     }
 
     @Override
+    public Optional<Long> calculateBalanceByWalletLessThanEndDate(String walletId, OffsetDateTime endDate) {
+        return transactionJpaRepository.calculateBalanceByWalletLessThanEndDate(walletId, endDate);
+    }
+
+    @Override
+    public Optional<Long> calculateBalanceByWalletIdAndDateRange(String walletId, OffsetDateTime startDate, OffsetDateTime endDate) {
+        return transactionJpaRepository.calculateBalanceByWalletIdAndDateRange(walletId, startDate, endDate);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Long getBalance(String walletId) {
         var walletBalance = walletBalanceRedisRepository.get(walletId);
@@ -59,14 +71,15 @@ public class TransactionRepositoryImpl implements TransactionRepository {
         if (date.toLocalDate().isEqual(OffsetDateTime.now().toLocalDate())) {
             return getBalance(walletId);
         }
-        return walletBalanceJpaRepository.findLastBalanceBeforeOrEqual(walletId, date).orElse(null);
+        var walletBalance = walletBalanceJpaRepository.findTopByWalletIdAndReferenceDateLessThanEqualOrderByReferenceDateDesc(walletId, date);
+        return walletBalance.map(WalletBalanceEntity::getBalance).orElse(null);
     }
 
     private Long calculateBalanceUsingWalletBalanceAndRecentTransactions(String walletId) {
         var lastWalletBalance = walletBalanceJpaRepository.findTopByWalletIdOrderByReferenceDateDesc(walletId);
         if (lastWalletBalance.isEmpty()) return null;
 
-        var recentTransactionsBalance = transactionJpaRepository.calculateBalanceByWalletAndDate(
+        var recentTransactionsBalance = transactionJpaRepository.calculateBalanceByWalletAndGreaterThanStartDate(
                 walletId,
                 lastWalletBalance.get().getReferenceDate()
         );

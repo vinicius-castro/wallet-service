@@ -9,7 +9,6 @@ import com.vicastro.walletservice.application.usecases.CreateWalletUseCase;
 import com.vicastro.walletservice.application.usecases.GetWalletBalanceUseCase;
 import com.vicastro.walletservice.application.usecases.TransferUseCase;
 import com.vicastro.walletservice.application.usecases.WithdrawFundsUseCase;
-import com.vicastro.walletservice.shared.utils.OffsetDateTimeUtil;
 
 import static com.vicastro.walletservice.shared.utils.OffsetDateTimeUtil.parseToOffsetDateTime;
 

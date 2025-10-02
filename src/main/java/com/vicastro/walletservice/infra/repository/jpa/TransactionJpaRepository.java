@@ -24,7 +24,7 @@ public interface TransactionJpaRepository extends JpaRepository<TransactionEntit
         WHERE t.walletId = :walletId 
         AND t.createdAt > :startDate
     """)
-    Long calculateBalanceByWalletAndDate(
+    Long calculateBalanceByWalletAndGreaterThanStartDate(
             @Param("walletId") String walletId,
             @Param("startDate") OffsetDateTime startDate
     );
@@ -42,5 +42,41 @@ public interface TransactionJpaRepository extends JpaRepository<TransactionEntit
     """)
     Optional<Long> calculateBalanceByWallet(
             @Param("walletId") String walletId
+    );
+
+    @Query("""
+        SELECT SUM(
+            CASE 
+                WHEN t.operation = 'CREDIT' THEN t.amount
+                WHEN t.operation = 'DEBIT' THEN -t.amount
+                ELSE 0 
+            END
+        ) 
+        FROM TransactionEntity t 
+        WHERE t.walletId = :walletId
+        AND t.createdAt < :endDate
+    """)
+    Optional<Long> calculateBalanceByWalletLessThanEndDate(
+            @Param("walletId") String walletId,
+            @Param("endDate") OffsetDateTime endDate
+    );
+
+    @Query("""
+        SELECT SUM(
+            CASE 
+                WHEN t.operation = 'CREDIT' THEN t.amount
+                WHEN t.operation = 'DEBIT' THEN -t.amount
+                ELSE 0
+            END
+        ) 
+        FROM TransactionEntity t 
+        WHERE t.walletId = :walletId 
+          AND t.createdAt >= :startDate 
+          AND t.createdAt < :endDate
+    """)
+    Optional<Long> calculateBalanceByWalletIdAndDateRange(
+            @Param("walletId") String walletId,
+            @Param("startDate") OffsetDateTime startDate,
+            @Param("endDate") OffsetDateTime endDate
     );
 }
