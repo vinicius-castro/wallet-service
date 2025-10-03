@@ -4,6 +4,7 @@ import com.vicastro.walletservice.adapter.WalletBalanceController;
 import com.vicastro.walletservice.domain.WalletBalance;
 import com.vicastro.walletservice.infra.repository.TransactionRepositoryImpl;
 import com.vicastro.walletservice.infra.repository.WalletBalanceRepositoryImpl;
+import com.vicastro.walletservice.infra.repository.cache.redis.WalletBalanceRedisRepository;
 import com.vicastro.walletservice.infra.repository.jpa.entity.WalletEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.when;
 
 class DailySettlementProcessorTest {
 
+    private WalletBalanceRedisRepository walletBalanceRedisRepository;
     private WalletBalanceRepositoryImpl walletBalanceRepository;
     private TransactionRepositoryImpl transactionRepository;
     private DailySettlementProcessor processor;
@@ -29,7 +31,8 @@ class DailySettlementProcessorTest {
     void setUp() {
         walletBalanceRepository = mock(WalletBalanceRepositoryImpl.class);
         transactionRepository = mock(TransactionRepositoryImpl.class);
-        processor = new DailySettlementProcessor(walletBalanceRepository, transactionRepository, "2024-06-01");
+        walletBalanceRedisRepository = mock(WalletBalanceRedisRepository.class);
+        processor = new DailySettlementProcessor(walletBalanceRepository, transactionRepository, walletBalanceRedisRepository, "2024-06-01");
     }
 
     @Test
@@ -48,7 +51,7 @@ class DailySettlementProcessorTest {
     @Test
     void shouldSetStartAndEndDatesCorrectlyInConstructor() {
         var referenceDateStr = "2024-06-01";
-        var processor = new DailySettlementProcessor(walletBalanceRepository, transactionRepository, referenceDateStr);
+        var processor = new DailySettlementProcessor(walletBalanceRepository, transactionRepository, walletBalanceRedisRepository, referenceDateStr);
 
         var referenceDate = LocalDate.parse(referenceDateStr);
         var zoneId = ZoneId.of("America/Sao_Paulo");

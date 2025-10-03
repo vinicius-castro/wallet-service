@@ -3,6 +3,7 @@ package com.vicastro.walletservice.infra.service.scheduler;
 import com.vicastro.walletservice.adapter.WalletBalanceController;
 import com.vicastro.walletservice.infra.repository.TransactionRepositoryImpl;
 import com.vicastro.walletservice.infra.repository.WalletBalanceRepositoryImpl;
+import com.vicastro.walletservice.infra.repository.cache.redis.WalletBalanceRedisRepository;
 import com.vicastro.walletservice.infra.repository.jpa.entity.WalletBalanceEntity;
 import com.vicastro.walletservice.infra.repository.jpa.entity.WalletEntity;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -21,15 +22,18 @@ public class DailySettlementProcessor implements ItemProcessor<WalletEntity, Wal
     private final OffsetDateTime startDate;
     private final OffsetDateTime endDate;
 
+    private final WalletBalanceRedisRepository walletBalanceRedisRepository;
     private final WalletBalanceRepositoryImpl walletBalanceRepository;
     private final TransactionRepositoryImpl transactionRepository;
 
     public DailySettlementProcessor(WalletBalanceRepositoryImpl walletBalanceRepository,
                                     TransactionRepositoryImpl transactionRepository,
+                                    WalletBalanceRedisRepository walletBalanceRedisRepository,
                                     @Value("#{jobParameters['referenceDate']}") String referenceDateStr
     ) {
         this.walletBalanceRepository = walletBalanceRepository;
         this.transactionRepository = transactionRepository;
+        this.walletBalanceRedisRepository = walletBalanceRedisRepository;
         var referenceDate = LocalDate.parse(referenceDateStr);
         var zoneId = ZoneId.of("America/Sao_Paulo");
         this.startDate = referenceDate.atStartOfDay(zoneId).toOffsetDateTime();
@@ -43,6 +47,7 @@ public class DailySettlementProcessor implements ItemProcessor<WalletEntity, Wal
         if (walletBalance == null) {
             return null;
         }
+        walletBalanceRedisRepository.invalidate(wallet.getCode());
         return new WalletBalanceEntity(walletBalance);
     }
 }
