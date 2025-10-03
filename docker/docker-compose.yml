@@ -1,5 +1,9 @@
 version: '3.8'
 
+networks:
+  wallet_net:
+    driver: bridge
+
 services:
   postgres_dev:
     image: postgres:16.2-alpine
@@ -11,6 +15,8 @@ services:
       POSTGRES_DB: wallet-db
       POSTGRES_USER: usr
       POSTGRES_PASSWORD: pw
+    networks:
+      - wallet_net
 
   redis:
     image: 'redis:7-alpine'
@@ -19,3 +25,5 @@ services:
     ports:
       - "6379:6379"
     command: redis-server --appendonly yes
+    networks:
+      - wallet_net
